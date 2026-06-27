@@ -519,3 +519,16 @@ select {
 .danger-zone {
   margin-top: 28px;
 }
+
+/* Workout-complete summary ------------------------------------------------ */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.summary-row:last-child {
+  border-bottom: none;
+}

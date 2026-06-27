@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { ExerciseCard } from '../components/ExerciseCard';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ShareButton } from '../components/ShareButton';
+import { EXERCISES } from '../domain/exercises';
 import { isExerciseSucceeded } from '../domain/progression';
+import { formatWeight } from '../domain/units';
 import { useAppStore } from '../store/useAppStore';
 
 function formatDate(iso: string): string {
@@ -12,16 +15,80 @@ function formatDate(iso: string): string {
   });
 }
 
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 export function TodayScreen() {
   const session = useAppStore((s) => s.currentSession);
+  const lastFinished = useAppStore((s) => s.lastFinished);
   const nextType = useAppStore((s) => s.nextWorkoutType);
   const settings = useAppStore((s) => s.settings);
   const startWorkout = useAppStore((s) => s.startWorkout);
   const finishWorkout = useAppStore((s) => s.finishWorkout);
   const discardWorkout = useAppStore((s) => s.discardWorkout);
+  const dismissFinished = useAppStore((s) => s.dismissFinished);
 
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+
+  // After finishing, celebrate and offer to share an image of the session.
+  if (!session && lastFinished) {
+    const okCount = lastFinished.exercises.filter(isExerciseSucceeded).length;
+    const total = lastFinished.exercises.length;
+    const allOk = okCount === total;
+    return (
+      <>
+        <div className="screen-header">
+          <h1>Workout Complete 🎉</h1>
+          <div className="sub">{formatDateTime(lastFinished.date)}</div>
+        </div>
+        <div className="screen">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div className="muted">Workout {lastFinished.type}</div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '6px 0' }}>
+              {okCount}/{total} exercises hit
+            </div>
+            <div className={`badge ${allOk ? 'ok' : 'bad'}`} style={{ marginBottom: 4 }}>
+              {allOk ? '✓ All sets' : `${okCount}/${total}`}
+            </div>
+          </div>
+
+          <div className="card">
+            {lastFinished.exercises.map((ex) => {
+              const ok = isExerciseSucceeded(ex);
+              return (
+                <div key={ex.exerciseId} className="summary-row">
+                  <span>{EXERCISES[ex.exerciseId].name}</span>
+                  <span className="muted">
+                    {formatWeight(ex.weight, lastFinished.unit)} ·{' '}
+                    {ex.workSets.map((s) => s.reps).join('/')}
+                    {ok ? ' ✓' : ' ✕'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <ShareButton
+            session={lastFinished}
+            className="btn btn-primary"
+            label="📤 Share workout image"
+          />
+          <div className="spacer" />
+          <button className="btn" onClick={dismissFinished}>
+            Done
+          </button>
+        </div>
+      </>
+    );
+  }
 
   if (!session) {
     return (
