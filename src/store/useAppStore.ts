@@ -29,6 +29,9 @@ interface Store extends AppState {
   rest: RestTimer;
   /** The session just completed, surfaced for the post-finish summary/share. */
   lastFinished: WorkoutSession | null;
+  /** ISO timestamp of the last backup export on this device, or null. Persisted
+   * device metadata — intentionally not part of AppState / the export payload. */
+  lastBackupAt: string | null;
 
   // Session lifecycle.
   startWorkout: () => void;
@@ -57,6 +60,8 @@ interface Store extends AppState {
   importData: (state: AppState) => void;
   resetAll: () => void;
   exportData: () => AppState;
+  /** Stamp the current time as the last successful backup. */
+  markBackedUp: () => void;
 }
 
 const PERSIST_KEY = 'fivebyfive-v1';
@@ -98,6 +103,7 @@ export const useAppStore = create<Store>()(
       ...defaultAppState('kg'),
       rest: { endsAt: null, durationSec: 0 },
       lastFinished: null,
+      lastBackupAt: null,
 
       startWorkout: () => {
         const { nextWorkoutType, exerciseStates, settings, currentSession } = get();
@@ -267,6 +273,9 @@ export const useAppStore = create<Store>()(
           nextWorkoutType: state.nextWorkoutType,
           lastFinished: null,
           rest: { endsAt: null, durationSec: 0 },
+          // After an import the current data matches an external file the user
+          // just handled, so treat it as backed up.
+          lastBackupAt: new Date().toISOString(),
         }),
 
       resetAll: () =>
@@ -277,11 +286,13 @@ export const useAppStore = create<Store>()(
         }),
 
       exportData: () => pickAppState(get()),
+
+      markBackedUp: () => set({ lastBackupAt: new Date().toISOString() }),
     }),
     {
       name: PERSIST_KEY,
       version: SCHEMA_VERSION,
-      partialize: (s) => pickAppState(s as Store),
+      partialize: (s) => ({ ...pickAppState(s as Store), lastBackupAt: (s as Store).lastBackupAt }),
       migrate: (persisted, version) => {
         // No migrations yet; future schema bumps handle older `version`s here.
         if (version < SCHEMA_VERSION) {
