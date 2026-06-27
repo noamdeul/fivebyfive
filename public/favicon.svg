@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+  <g fill="#3b82f6">
+    <!-- barbell -->
+    <rect x="96" y="232" width="320" height="48" rx="12"/>
+    <rect x="64" y="196" width="40" height="120" rx="14"/>
+    <rect x="408" y="196" width="40" height="120" rx="14"/>
+    <rect x="36" y="216" width="34" height="80" rx="12"/>
+    <rect x="442" y="216" width="34" height="80" rx="12"/>
+  </g>
+  <text x="256" y="430" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="120" font-weight="800" fill="#f1f5f9" text-anchor="middle">5×5</text>
+</svg>

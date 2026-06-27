@@ -1,0 +1,124 @@
+import { useState } from 'react';
+import { ExerciseCard } from '../components/ExerciseCard';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { isExerciseSucceeded } from '../domain/progression';
+import { useAppStore } from '../store/useAppStore';
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+export function TodayScreen() {
+  const session = useAppStore((s) => s.currentSession);
+  const nextType = useAppStore((s) => s.nextWorkoutType);
+  const settings = useAppStore((s) => s.settings);
+  const startWorkout = useAppStore((s) => s.startWorkout);
+  const finishWorkout = useAppStore((s) => s.finishWorkout);
+  const discardWorkout = useAppStore((s) => s.discardWorkout);
+
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+
+  if (!session) {
+    return (
+      <>
+        <div className="screen-header">
+          <h1>Today</h1>
+          <div className="sub">Ready when you are</div>
+        </div>
+        <div className="screen">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div className="muted">Next workout</div>
+            <div style={{ fontSize: '2.4rem', fontWeight: 800, margin: '6px 0' }}>
+              Workout {nextType}
+            </div>
+            <div className="muted" style={{ marginBottom: 16 }}>
+              {nextType === 'A'
+                ? 'Squat · Bench Press · Barbell Row'
+                : 'Squat · Overhead Press · Deadlift'}
+            </div>
+            <button className="btn btn-primary" onClick={startWorkout}>
+              Start Workout {nextType}
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const anyLogged = session.exercises.some((ex) =>
+    ex.workSets.some((s) => s.done),
+  );
+  const summary = session.exercises.map((ex) => ({
+    id: ex.exerciseId,
+    ok: isExerciseSucceeded(ex),
+  }));
+  const okCount = summary.filter((s) => s.ok).length;
+
+  return (
+    <>
+      <div className="screen-header">
+        <h1>
+          Workout {session.type} <span className="pill">In progress</span>
+        </h1>
+        <div className="sub">{formatDate(session.date)}</div>
+      </div>
+      <div className="screen">
+        {session.exercises.map((ex, i) => (
+          <ExerciseCard
+            key={ex.exerciseId}
+            exercise={ex}
+            exerciseIndex={i}
+            settings={settings}
+          />
+        ))}
+
+        <div className="muted" style={{ margin: '4px 0 14px' }}>
+          {okCount}/{summary.length} exercises completed
+        </div>
+
+        <button className="btn btn-success" onClick={() => setConfirmFinish(true)}>
+          Finish Workout
+        </button>
+        <div className="spacer" />
+        <button className="btn btn-danger" onClick={() => setConfirmDiscard(true)}>
+          Discard
+        </button>
+      </div>
+
+      {confirmFinish && (
+        <ConfirmDialog
+          title="Finish workout?"
+          message={
+            anyLogged
+              ? `${okCount} of ${summary.length} exercises hit all reps. Weights for next time will update accordingly.`
+              : 'No sets are logged yet. Finishing now counts every exercise as a failure.'
+          }
+          confirmLabel="Finish"
+          onConfirm={() => {
+            finishWorkout();
+            setConfirmFinish(false);
+          }}
+          onCancel={() => setConfirmFinish(false)}
+        />
+      )}
+      {confirmDiscard && (
+        <ConfirmDialog
+          title="Discard workout?"
+          message="This in-progress workout will be deleted. Your progression weights won't change."
+          confirmLabel="Discard"
+          danger
+          onConfirm={() => {
+            discardWorkout();
+            setConfirmDiscard(false);
+          }}
+          onCancel={() => setConfirmDiscard(false)}
+        />
+      )}
+    </>
+  );
+}
