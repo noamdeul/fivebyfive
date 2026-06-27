@@ -76,6 +76,13 @@ describe('computeNextState', () => {
     expect(next.currentWeight).toBe(105);
   });
 
+  it('treats a missing increment as zero (weight unchanged on success)', () => {
+    const sparse: ProgressionConfig = { ...config, increments: {} as ProgressionConfig['increments'] };
+    const next = computeNextState(state(60, 0), { exerciseId: 'squat', succeeded: true }, sparse, 2.5);
+    expect(next.currentWeight).toBe(60);
+    expect(next.consecutiveFailures).toBe(0);
+  });
+
   it('keeps the weight but counts the failure on the first two misses', () => {
     const first = computeNextState(state(100, 0), { exerciseId: 'squat', succeeded: false }, config, 2.5);
     expect(first.currentWeight).toBe(100);
