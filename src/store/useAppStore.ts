@@ -27,11 +27,14 @@ interface RestTimer {
 interface Store extends AppState {
   // Transient UI state (not persisted).
   rest: RestTimer;
+  /** The session just completed, surfaced for the post-finish summary/share. */
+  lastFinished: WorkoutSession | null;
 
   // Session lifecycle.
   startWorkout: () => void;
   discardWorkout: () => void;
   finishWorkout: () => void;
+  dismissFinished: () => void;
 
   // Set logging.
   toggleSet: (exerciseIndex: number, setIndex: number, isWarmup: boolean) => void;
@@ -94,6 +97,7 @@ export const useAppStore = create<Store>()(
     (set, get) => ({
       ...defaultAppState('kg'),
       rest: { endsAt: null, durationSec: 0 },
+      lastFinished: null,
 
       startWorkout: () => {
         const { nextWorkoutType, exerciseStates, settings, currentSession } = get();
@@ -105,10 +109,11 @@ export const useAppStore = create<Store>()(
           newId(),
           new Date().toISOString(),
         );
-        set({ currentSession: session });
+        set({ currentSession: session, lastFinished: null });
       },
 
-      discardWorkout: () => set({ currentSession: null, rest: { endsAt: null, durationSec: 0 } }),
+      discardWorkout: () =>
+        set({ currentSession: null, lastFinished: null, rest: { endsAt: null, durationSec: 0 } }),
 
       finishWorkout: () => {
         const { currentSession, exerciseStates, settings, history, nextWorkoutType } = get();
@@ -131,9 +136,12 @@ export const useAppStore = create<Store>()(
           exerciseStates: nextStates,
           nextWorkoutType: flipWorkoutType(nextWorkoutType),
           currentSession: null,
+          lastFinished: completed,
           rest: { endsAt: null, durationSec: 0 },
         });
       },
+
+      dismissFinished: () => set({ lastFinished: null }),
 
       toggleSet: (exerciseIndex, setIndex, isWarmup) => {
         const { currentSession } = get();
@@ -257,11 +265,16 @@ export const useAppStore = create<Store>()(
           history: state.history,
           currentSession: state.currentSession,
           nextWorkoutType: state.nextWorkoutType,
+          lastFinished: null,
           rest: { endsAt: null, durationSec: 0 },
         }),
 
       resetAll: () =>
-        set({ ...defaultAppState(get().settings.unit), rest: { endsAt: null, durationSec: 0 } }),
+        set({
+          ...defaultAppState(get().settings.unit),
+          lastFinished: null,
+          rest: { endsAt: null, durationSec: 0 },
+        }),
 
       exportData: () => pickAppState(get()),
     }),

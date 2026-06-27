@@ -1,3 +1,4 @@
+import { ShareButton } from '../components/ShareButton';
 import { EXERCISES } from '../domain/exercises';
 import { isExerciseSucceeded } from '../domain/progression';
 import type { WorkoutSession } from '../domain/types';
@@ -51,6 +52,8 @@ export function SessionDetail({ session, onBack }: Props) {
             </div>
           );
         })}
+
+        <ShareButton session={session} label="📤 Share this workout" />
       </div>
     </>
   );
