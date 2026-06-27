@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BackupReminder } from './components/BackupReminder';
 import { BottomNav } from './components/BottomNav';
 import { RestTimerBar } from './components/RestTimerBar';
 import { usePwaUpdate } from './hooks/usePwaUpdate';
@@ -18,6 +19,8 @@ export default function App() {
       {tab === 'settings' && <SettingsScreen />}
 
       <RestTimerBar />
+
+      <BackupReminder />
 
       {needRefresh && (
         <div className="update-toast">

@@ -1,24 +1,13 @@
 import { useRef, useState } from 'react';
 import type { AppState } from '../domain/types';
+import { useBackupExport } from '../hooks/useBackupExport';
 import { useAppStore } from '../store/useAppStore';
 
 export function DataIO() {
-  const exportData = useAppStore((s) => s.exportData);
   const importData = useAppStore((s) => s.importData);
+  const onExport = useBackupExport();
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<string | null>(null);
-
-  const onExport = () => {
-    const data = exportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const stamp = new Date().toISOString().slice(0, 10);
-    a.download = `fivebyfive-backup-${stamp}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const onImportFile = async (file: File) => {
     try {

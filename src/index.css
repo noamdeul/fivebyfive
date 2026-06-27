@@ -503,6 +503,30 @@ select {
   text-decoration: underline;
 }
 
+.backup-banner {
+  position: fixed;
+  /* Sit above the update toast's slot so the two never overlap. */
+  bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(var(--max-w) - 32px);
+  width: max-content;
+  background: var(--warn);
+  color: #1f1300;
+  padding: 10px 16px;
+  border-radius: 999px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.9rem;
+  z-index: 40;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.backup-banner button {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .empty {
   text-align: center;
   color: var(--text-dim);
