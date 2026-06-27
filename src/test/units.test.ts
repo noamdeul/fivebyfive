@@ -18,6 +18,11 @@ describe('units', () => {
     expect(roundToIncrement(42.5 + 2.5, 2.5)).toBe(45);
   });
 
+  it('returns the weight unchanged for a non-positive increment', () => {
+    expect(roundToIncrement(47.3, 0)).toBe(47.3);
+    expect(roundToIncrement(47.3, -2.5)).toBe(47.3);
+  });
+
   it('converts kg <-> lb', () => {
     expect(kgToLb(100)).toBeCloseTo(220.46, 1);
     expect(lbToKg(45)).toBeCloseTo(20.41, 1);
