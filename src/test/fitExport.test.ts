@@ -38,18 +38,22 @@ describe('buildFitBytes (full encode → decode)', () => {
     const { messages, errors } = decoder.read();
     expect(errors).toHaveLength(0);
 
-    expect(messages.sessionMesgs[0].sport).toBe('training');
-    expect(messages.sessionMesgs[0].subSport).toBe('strengthTraining');
+    const sess = messages.sessionMesgs?.[0];
+    expect(sess?.sport).toBe('training');
+    expect(sess?.subSport).toBe('strengthTraining');
 
-    const active = messages.setMesgs.filter((s: { setType: string }) => s.setType === 'active');
+    const setMesgs = messages.setMesgs ?? [];
+    const active = setMesgs.filter((s) => s.setType === 'active');
     expect(active).toHaveLength(3);
     // Weight survives the round-trip in kg; category + numeric subtype resolved.
-    expect(active[0].weight).toBe(100);
-    expect(active[0].repetitions).toBe(5);
-    expect(active[0].category).toEqual(['squat']);
-    expect(active[0].categorySubtype.length).toBe(1);
-    expect(typeof active[0].categorySubtype[0]).toBe('number');
-    expect(active[0].weightDisplayUnit).toBe('kilogram');
+    const first = active[0]!;
+    expect(first.weight).toBe(100);
+    expect(first.repetitions).toBe(5);
+    expect(first.category).toEqual(['squat']);
+    const subtype = first.categorySubtype ?? [];
+    expect(subtype).toHaveLength(1);
+    expect(typeof subtype[0]).toBe('number');
+    expect(first.weightDisplayUnit).toBe('kilogram');
   });
 
   it('names the file by date and workout type', () => {
