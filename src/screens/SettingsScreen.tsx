@@ -201,6 +201,22 @@ export function SettingsScreen() {
               ))}
             </div>
           </div>
+          <div className="field">
+            <label>Keep screen awake</label>
+            <div className="toggle">
+              {([['On', true], ['Off', false]] as [string, boolean][]).map(([label, value]) => (
+                <button
+                  key={label}
+                  className={settings.keepScreenAwake === value ? 'active' : ''}
+                  onClick={() =>
+                    settings.keepScreenAwake !== value && updateSettings({ keepScreenAwake: value })
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="section-label">Deload</div>

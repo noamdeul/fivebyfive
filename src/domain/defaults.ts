@@ -9,7 +9,9 @@ import { BAR_WEIGHT, DEFAULT_ROUNDING, PLATE_SIZES } from './units';
 // backfills it to `true` for older persisted state.
 // v4 added editable `settings.barWeight` and `settings.plates`; the store's
 // `migrate` backfills them from the unit defaults for older persisted state.
-export const SCHEMA_VERSION = 4;
+// v5 added `settings.keepScreenAwake` (Screen Wake Lock); the store's `migrate`
+// backfills it to `true` for older persisted state.
+export const SCHEMA_VERSION = 5;
 
 /** Default per-exercise weight increments, per unit. */
 const INCREMENTS: Record<Unit, Record<ExerciseId, number>> = {
@@ -34,6 +36,7 @@ export function defaultSettings(unit: Unit): Settings {
     restSeconds: { normal: 90, heavy: 180, deadlift: 300 },
     rounding: DEFAULT_ROUNDING[unit],
     sound: true,
+    keepScreenAwake: true,
     barWeight: BAR_WEIGHT[unit],
     plates: [...PLATE_SIZES[unit]],
     config: {
