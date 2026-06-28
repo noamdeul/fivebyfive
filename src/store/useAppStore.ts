@@ -148,6 +148,7 @@ function pickAppState(s: Store): AppState {
  *  - v2 -> v3 added `settings.sound`; default it on for older state.
  *  - v3 -> v4 added `settings.barWeight`/`settings.plates`; backfill from the
  *    unit defaults for older state.
+ *  - v4 -> v5 added `settings.keepScreenAwake`; default it on for older state.
  */
 export function migratePersisted(persisted: unknown, version: number): AppState {
   const state = persisted as AppState;
@@ -162,6 +163,9 @@ export function migratePersisted(persisted: unknown, version: number): AppState 
     if (state.settings.plates === undefined) {
       state.settings = { ...state.settings, plates: [...PLATE_SIZES[unit]] };
     }
+  }
+  if (version < 5 && state?.settings && state.settings.keepScreenAwake === undefined) {
+    state.settings = { ...state.settings, keepScreenAwake: true };
   }
   return state;
 }
@@ -359,6 +363,7 @@ export const useAppStore = create<Store>()(
           settings: {
             ...state.settings,
             sound: state.settings.sound ?? true,
+            keepScreenAwake: state.settings.keepScreenAwake ?? true,
             barWeight: state.settings.barWeight ?? BAR_WEIGHT[state.settings.unit],
             plates: state.settings.plates ?? [...PLATE_SIZES[state.settings.unit]],
           },

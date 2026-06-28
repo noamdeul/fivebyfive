@@ -23,6 +23,7 @@ describe('defaultSettings', () => {
     expect(s.config.deloadFactor).toBe(0.1);
     expect(s.config.deloadFailThreshold).toBe(3);
     expect(s.sound).toBe(true);
+    expect(s.keepScreenAwake).toBe(true);
     expect(s.barWeight).toBe(BAR_WEIGHT.kg);
     expect(s.plates).toEqual([25, 20, 15, 10, 5, 2.5, 1.25]);
   });

@@ -9,12 +9,14 @@ import { HistoryScreen } from './screens/HistoryScreen';
 import { ProgressScreen } from './screens/ProgressScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
+import { useAppStore } from './store/useAppStore';
 import type { Tab } from './store/useAppStore';
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('today');
   const { needRefresh, update, dismiss } = usePwaUpdate();
-  useWakeLock();
+  const keepScreenAwake = useAppStore((s) => s.settings.keepScreenAwake);
+  useWakeLock(keepScreenAwake);
 
   return (
     <div className="app">

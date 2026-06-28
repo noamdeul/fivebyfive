@@ -11,9 +11,12 @@ import { useEffect } from 'react';
  *
  * Gracefully no-ops where the API is unavailable (older browsers, insecure
  * contexts) or where the request is rejected (e.g. low battery).
+ *
+ * Pass `enabled: false` to release any held lock and stop re-acquiring it.
  */
-export function useWakeLock() {
+export function useWakeLock(enabled: boolean) {
   useEffect(() => {
+    if (!enabled) return;
     if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) return;
 
     let sentinel: WakeLockSentinel | null = null;
@@ -48,5 +51,5 @@ export function useWakeLock() {
       void sentinel?.release();
       sentinel = null;
     };
-  }, []);
+  }, [enabled]);
 }

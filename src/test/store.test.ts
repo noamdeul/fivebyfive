@@ -277,4 +277,18 @@ describe('migratePersisted', () => {
     expect(migrated.settings.barWeight).toBe(15);
     expect(migrated.settings.plates).toEqual([20, 10]);
   });
+
+  it('backfills settings.keepScreenAwake for v4 state', () => {
+    const v4 = defaultAppState('kg') as AppState;
+    delete (v4.settings as Partial<AppState['settings']>).keepScreenAwake;
+    const migrated = migratePersisted(v4, 4);
+    expect(migrated.settings.keepScreenAwake).toBe(true);
+  });
+
+  it('leaves an explicit keepScreenAwake setting untouched', () => {
+    const state = defaultAppState('kg') as AppState;
+    state.settings.keepScreenAwake = false;
+    const migrated = migratePersisted(state, 5);
+    expect(migrated.settings.keepScreenAwake).toBe(false);
+  });
 });
