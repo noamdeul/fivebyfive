@@ -118,8 +118,9 @@ export function CustomExercisesEditor() {
                   className="btn btn-danger"
                   style={{ width: 'auto' }}
                   onClick={() => setPendingDelete(def)}
+                  aria-label={`Delete ${def.name}`}
                 >
-                  Delete
+                  🗑️
                 </button>
               </div>
             </div>
