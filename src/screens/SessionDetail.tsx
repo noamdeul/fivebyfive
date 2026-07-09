@@ -74,7 +74,25 @@ export function SessionDetail({ session, onBack }: Props) {
                   Est. 1RM {formatWeight(e1RM, session.unit)}
                 </div>
               )}
-              <div className="set-grid" style={{ marginTop: 12 }}>
+              {(ex.warmupSets ?? []).length > 0 && (
+                <>
+                  <div className="section-label" style={{ marginTop: 12 }}>
+                    Warmup
+                  </div>
+                  <div className="set-grid warmup-grid">
+                    {ex.warmupSets.map((s, i) => (
+                      <div key={i} className={`set-cell warmup ${s.done ? 'done' : ''}`}>
+                        {s.reps}
+                        <span className="hint">{formatWeight(s.weight ?? 0, session.unit)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              <div className="section-label" style={{ marginTop: 12 }}>
+                Work sets
+              </div>
+              <div className="set-grid">
                 {ex.workSets.map((s, i) => {
                   const fail = s.reps < s.targetReps;
                   return (
