@@ -192,6 +192,9 @@ function pickAppState(s: Store): AppState {
  *    schedule) for older state.
  *  - v6 -> v7 added `customExercises`/`customWorkouts`; default both to empty
  *    arrays for older state. Existing sessions need no rewrite.
+ *  - v7 -> v8 added `config.sessionsPerIncrement` (squat increases every 2nd
+ *    successful session) and the per-exercise `successesSinceIncrement`
+ *    counter; backfill both for older state.
  */
 export function migratePersisted(persisted: unknown, version: number): AppState {
   const state = persisted as AppState;
@@ -216,6 +219,22 @@ export function migratePersisted(persisted: unknown, version: number): AppState 
   if (version < 7) {
     if (state?.customExercises === undefined) state.customExercises = [];
     if (state?.customWorkouts === undefined) state.customWorkouts = [];
+  }
+  if (version < 8) {
+    if (state?.settings && state.settings.config.sessionsPerIncrement === undefined) {
+      state.settings = {
+        ...state.settings,
+        config: { ...state.settings.config, sessionsPerIncrement: { squat: 2 } },
+      };
+    }
+    if (state?.exerciseStates) {
+      state.exerciseStates = Object.fromEntries(
+        Object.entries(state.exerciseStates).map(([id, ex]) => [
+          id,
+          { ...ex, successesSinceIncrement: ex.successesSinceIncrement ?? 0 },
+        ]),
+      ) as AppState['exerciseStates'];
+    }
   }
   return state;
 }
@@ -549,6 +568,10 @@ export const useAppStore = create<Store>()(
             keepScreenAwake: state.settings.keepScreenAwake ?? true,
             barWeight: state.settings.barWeight ?? BAR_WEIGHT[state.settings.unit],
             plates: state.settings.plates ?? [...PLATE_SIZES[state.settings.unit]],
+            config: {
+              ...state.settings.config,
+              sessionsPerIncrement: state.settings.config.sessionsPerIncrement ?? { squat: 2 },
+            },
           },
           exerciseStates: state.exerciseStates,
           history: state.history,

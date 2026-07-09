@@ -31,8 +31,12 @@ export function WarmupSets({
         <span className="section-label" style={{ margin: 0 }}>
           Warmup
         </span>
-        <button className="link-btn" onClick={() => setEditing((e) => !e)}>
-          {editing ? 'Done' : 'Edit'}
+        <button
+          className="link-btn"
+          onClick={() => setEditing((e) => !e)}
+          aria-label={editing ? 'Done editing warmups' : 'Edit warmup sets'}
+        >
+          {editing ? 'Done' : '✏️'}
         </button>
       </div>
 

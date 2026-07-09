@@ -88,7 +88,7 @@ export function ExerciseCard({ exercise, exerciseIndex, settings }: Props) {
           onClick={() => setEditingWeight((e) => !e)}
           aria-label={editingWeight ? 'Done editing weight' : 'Edit weight'}
         >
-          {editingWeight ? 'Done' : 'Edit'}
+          {editingWeight ? 'Done' : '✏️'}
         </button>
       </div>
       <div className="plate-load">

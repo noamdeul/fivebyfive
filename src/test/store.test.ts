@@ -62,11 +62,34 @@ describe('finishWorkout', () => {
     expect(s.lastFinished).not.toBeNull();
     expect(s.nextWorkoutType).toBe('B');
 
-    // Squat progressed by its increment; bench (failed) banked a failure.
-    expect(s.exerciseStates.squat.currentWeight).toBe(BAR_WEIGHT.kg + 2.5);
+    // Squat banked its first success (it needs 2 per increase); bench (failed)
+    // banked a failure.
+    expect(s.exerciseStates.squat.currentWeight).toBe(BAR_WEIGHT.kg);
+    expect(s.exerciseStates.squat.successesSinceIncrement).toBe(1);
     expect(s.exerciseStates.squat.consecutiveFailures).toBe(0);
     expect(s.exerciseStates.bench.currentWeight).toBe(BAR_WEIGHT.kg);
     expect(s.exerciseStates.bench.consecutiveFailures).toBe(1);
+  });
+
+  it('increases the squat weight on the second successful session', () => {
+    useAppStore.getState().startWorkout(); // A: squat is exercise 0
+    succeedExercise(0);
+    useAppStore.getState().finishWorkout();
+    expect(useAppStore.getState().exerciseStates.squat.currentWeight).toBe(BAR_WEIGHT.kg);
+
+    useAppStore.getState().startWorkout(); // B: squat is exercise 0 again
+    succeedExercise(0);
+    useAppStore.getState().finishWorkout();
+    const squat = useAppStore.getState().exerciseStates.squat;
+    expect(squat.currentWeight).toBe(BAR_WEIGHT.kg + 2.5);
+    expect(squat.successesSinceIncrement).toBe(0);
+  });
+
+  it('increases a single-cadence lift on its first successful session', () => {
+    useAppStore.getState().startWorkout();
+    succeedExercise(1); // bench
+    useAppStore.getState().finishWorkout();
+    expect(useAppStore.getState().exerciseStates.bench.currentWeight).toBe(BAR_WEIGHT.kg + 2.5);
   });
 
   it('does nothing when there is no session in progress', () => {
@@ -164,11 +187,22 @@ describe('setExerciseWeight', () => {
   });
 
   it('progression on finish advances from the edited weight', () => {
+    useAppStore.getState().setExerciseWeight(1, 40); // bench
+    succeedExercise(1);
+    useAppStore.getState().finishWorkout();
+    // 40 + 2.5 increment, not the pre-edit 20 + 2.5.
+    expect(useAppStore.getState().exerciseStates.bench.currentWeight).toBe(42.5);
+  });
+
+  it('a banked squat success still adopts the edited weight', () => {
     useAppStore.getState().setExerciseWeight(0, 60);
     succeedExercise(0);
     useAppStore.getState().finishWorkout();
-    // 60 + 2.5 increment, not the pre-edit 20 + 2.5.
-    expect(useAppStore.getState().exerciseStates.squat.currentWeight).toBe(62.5);
+    // First of the two required successes: no increment yet, but the next
+    // session should start from the weight actually lifted.
+    const squat = useAppStore.getState().exerciseStates.squat;
+    expect(squat.currentWeight).toBe(60);
+    expect(squat.successesSinceIncrement).toBe(1);
   });
 
   it('a failed exercise keeps the edited weight for next time', () => {
@@ -353,6 +387,23 @@ describe('migratePersisted', () => {
     const migrated = migratePersisted(v6, 6);
     expect(migrated.customExercises).toEqual([]);
     expect(migrated.customWorkouts).toEqual([]);
+  });
+
+  it('backfills sessionsPerIncrement and success counters for v7 state', () => {
+    const v7 = defaultAppState('kg') as AppState;
+    delete v7.settings.config.sessionsPerIncrement;
+    for (const ex of Object.values(v7.exerciseStates)) delete ex.successesSinceIncrement;
+    const migrated = migratePersisted(v7, 7);
+    expect(migrated.settings.config.sessionsPerIncrement).toEqual({ squat: 2 });
+    expect(migrated.exerciseStates.squat.successesSinceIncrement).toBe(0);
+    expect(migrated.exerciseStates.bench.successesSinceIncrement).toBe(0);
+  });
+
+  it('leaves an explicit sessionsPerIncrement untouched', () => {
+    const state = defaultAppState('kg') as AppState;
+    state.settings.config.sessionsPerIncrement = {};
+    const migrated = migratePersisted(state, 7);
+    expect(migrated.settings.config.sessionsPerIncrement).toEqual({});
   });
 });
 

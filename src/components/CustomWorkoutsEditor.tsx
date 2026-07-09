@@ -81,8 +81,9 @@ export function CustomWorkoutsEditor() {
                   className="btn"
                   style={{ width: 'auto' }}
                   onClick={() => startEdit(workout)}
+                  aria-label={`Edit ${workout.name}`}
                 >
-                  Edit
+                  ✏️
                 </button>
                 <button
                   className="btn btn-danger"

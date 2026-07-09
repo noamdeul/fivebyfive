@@ -26,10 +26,13 @@ export function resultFromLogged(logged: LoggedExercise): ExerciseResult {
  * Pure progression/deload engine. Given an exercise's prior state and the
  * result of the session that just finished, returns its new state.
  *
- *  - Success: add the per-exercise increment, reset the failure counter.
+ *  - Success: bank a success. Once `sessionsPerIncrement` successes (default
+ *    1) are banked, add the per-exercise increment and reset the success
+ *    counter. Always resets the failure counter. Failures in between do not
+ *    erase banked successes.
  *  - Failure: increment the failure counter. Once it reaches the deload
  *    threshold, reduce the weight by `deloadFactor` (rounded to a loadable
- *    weight) and reset the counter. Weight is unchanged on earlier failures.
+ *    weight) and reset both counters. Weight is unchanged on earlier failures.
  */
 export function computeNextState(
   prev: ExerciseState,
@@ -38,11 +41,19 @@ export function computeNextState(
   rounding: number,
 ): ExerciseState {
   if (result.succeeded) {
+    const needed = config.sessionsPerIncrement?.[prev.exerciseId] ?? 1;
+    const successes = (prev.successesSinceIncrement ?? 0) + 1;
+
+    if (successes < needed) {
+      return { ...prev, consecutiveFailures: 0, successesSinceIncrement: successes };
+    }
+
     const increment = config.increments[prev.exerciseId] ?? 0;
     return {
       ...prev,
       currentWeight: roundToIncrement(prev.currentWeight + increment, rounding),
       consecutiveFailures: 0,
+      successesSinceIncrement: 0,
     };
   }
 
@@ -54,6 +65,7 @@ export function computeNextState(
       ...prev,
       currentWeight: roundToIncrement(deloaded, rounding),
       consecutiveFailures: 0,
+      successesSinceIncrement: 0,
     };
   }
 

@@ -87,6 +87,12 @@ export interface ExerciseState {
   /** Next working weight to attempt, in the active unit. */
   currentWeight: number;
   consecutiveFailures: number;
+  /**
+   * Successful sessions banked toward the next weight increase, for exercises
+   * with a `sessionsPerIncrement` above 1. Optional: absent (pre-v8 state and
+   * old backups) means 0.
+   */
+  successesSinceIncrement?: number;
 }
 
 export interface ProgressionConfig {
@@ -95,6 +101,12 @@ export interface ProgressionConfig {
   deloadFactor: number;
   /** Consecutive failures before a deload triggers. */
   deloadFailThreshold: number;
+  /**
+   * Successful sessions required per weight increase. Exercises not listed
+   * increase on every success (i.e. default 1). Squat defaults to 2 since it
+   * appears in both A and B workouts.
+   */
+  sessionsPerIncrement?: Partial<Record<ExerciseId, number>>;
 }
 
 export interface RestSeconds {

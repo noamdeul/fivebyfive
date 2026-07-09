@@ -117,3 +117,72 @@ describe('computeNextState', () => {
     expect(s.currentWeight).toBe(92.5);
   });
 });
+
+describe('computeNextState with sessionsPerIncrement', () => {
+  const twoSession: ProgressionConfig = { ...config, sessionsPerIncrement: { squat: 2 } };
+
+  it('banks the first success without changing the weight', () => {
+    const next = computeNextState(
+      state(60, 2),
+      { exerciseId: 'squat', succeeded: true },
+      twoSession,
+      2.5,
+    );
+    expect(next.currentWeight).toBe(60);
+    expect(next.successesSinceIncrement).toBe(1);
+    expect(next.consecutiveFailures).toBe(0);
+  });
+
+  it('adds the increment on the second success and resets the counter', () => {
+    let s = state(60, 0);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: true }, twoSession, 2.5);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: true }, twoSession, 2.5);
+    expect(s.currentWeight).toBe(62.5);
+    expect(s.successesSinceIncrement).toBe(0);
+  });
+
+  it('keeps a banked success across a failure in between', () => {
+    let s = state(60, 0);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: true }, twoSession, 2.5);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: false }, twoSession, 2.5);
+    expect(s.currentWeight).toBe(60);
+    expect(s.successesSinceIncrement).toBe(1);
+    expect(s.consecutiveFailures).toBe(1);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: true }, twoSession, 2.5);
+    expect(s.currentWeight).toBe(62.5);
+    expect(s.successesSinceIncrement).toBe(0);
+  });
+
+  it('resets the banked successes on a deload', () => {
+    let s = state(100, 0);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: true }, twoSession, 2.5);
+    expect(s.successesSinceIncrement).toBe(1);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: false }, twoSession, 2.5);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: false }, twoSession, 2.5);
+    s = computeNextState(s, { exerciseId: 'squat', succeeded: false }, twoSession, 2.5);
+    expect(s.currentWeight).toBe(90);
+    expect(s.successesSinceIncrement).toBe(0);
+  });
+
+  it('does not affect exercises without an entry', () => {
+    const next = computeNextState(
+      { exerciseId: 'bench', currentWeight: 40, consecutiveFailures: 0 },
+      { exerciseId: 'bench', succeeded: true },
+      twoSession,
+      2.5,
+    );
+    expect(next.currentWeight).toBe(42.5);
+  });
+
+  it('treats missing counters from pre-v8 state as zero', () => {
+    // No `successesSinceIncrement` on the incoming state at all.
+    const next = computeNextState(
+      { exerciseId: 'squat', currentWeight: 60, consecutiveFailures: 0 },
+      { exerciseId: 'squat', succeeded: true },
+      twoSession,
+      2.5,
+    );
+    expect(next.currentWeight).toBe(60);
+    expect(next.successesSinceIncrement).toBe(1);
+  });
+});
