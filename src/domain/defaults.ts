@@ -18,7 +18,11 @@ import { BAR_WEIGHT, DEFAULT_ROUNDING, PLATE_SIZES } from './units';
 // persisted state. Existing sessions need no rewrite — the new WorkoutSession
 // fields (`kind`/`name`/`templateId`) are optional and old sessions are treated
 // as built-in.
-export const SCHEMA_VERSION = 7;
+// v8 added `config.sessionsPerIncrement` (successful sessions per weight
+// increase; squat defaults to 2 since it appears in both A and B workouts) and
+// the per-exercise `successesSinceIncrement` counter; the store's `migrate`
+// backfills both for older persisted state.
+export const SCHEMA_VERSION = 8;
 
 /** Default per-exercise weight increments, per unit. */
 const INCREMENTS: Record<Unit, Record<ExerciseId, number>> = {
@@ -51,6 +55,7 @@ export function defaultSettings(unit: Unit): Settings {
       increments: INCREMENTS[unit],
       deloadFactor: 0.1,
       deloadFailThreshold: 3,
+      sessionsPerIncrement: { squat: 2 },
     },
   };
 }
@@ -59,7 +64,12 @@ export function defaultExerciseStates(unit: Unit): Record<ExerciseId, ExerciseSt
   const weights = startingWeights(unit);
   const states = {} as Record<ExerciseId, ExerciseState>;
   for (const id of ALL_EXERCISE_IDS) {
-    states[id] = { exerciseId: id, currentWeight: weights[id], consecutiveFailures: 0 };
+    states[id] = {
+      exerciseId: id,
+      currentWeight: weights[id],
+      consecutiveFailures: 0,
+      successesSinceIncrement: 0,
+    };
   }
   return states;
 }

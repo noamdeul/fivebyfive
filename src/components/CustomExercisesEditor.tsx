@@ -106,8 +106,13 @@ export function CustomExercisesEditor() {
                 </span>
               </label>
               <div className="btn-row" style={{ width: 'auto' }}>
-                <button className="btn" style={{ width: 'auto' }} onClick={() => startEdit(def)}>
-                  Edit
+                <button
+                  className="btn"
+                  style={{ width: 'auto' }}
+                  onClick={() => startEdit(def)}
+                  aria-label={`Edit ${def.name}`}
+                >
+                  ✏️
                 </button>
                 <button
                   className="btn btn-danger"

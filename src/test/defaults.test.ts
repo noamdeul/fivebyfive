@@ -22,6 +22,7 @@ describe('defaultSettings', () => {
     });
     expect(s.config.deloadFactor).toBe(0.1);
     expect(s.config.deloadFailThreshold).toBe(3);
+    expect(s.config.sessionsPerIncrement).toEqual({ squat: 2 });
     expect(s.sound).toBe(true);
     expect(s.keepScreenAwake).toBe(true);
     expect(s.barWeight).toBe(BAR_WEIGHT.kg);
@@ -55,6 +56,7 @@ describe('defaultExerciseStates', () => {
     expect(states.deadlift.currentWeight).toBe(40);
     for (const id of ALL_EXERCISE_IDS) {
       expect(states[id].consecutiveFailures).toBe(0);
+      expect(states[id].successesSinceIncrement).toBe(0);
       expect(states[id].exerciseId).toBe(id);
     }
   });
