@@ -228,9 +228,14 @@ export function TodayScreen() {
             sets
           </span>
           {sets.warmupTotal > 0 && (
-            <span className="muted">
-              Warmups {sets.warmupDone}/{sets.warmupTotal}
-            </span>
+            <>
+              <span className="muted">
+                Warmups {sets.warmupDone}/{sets.warmupTotal}
+              </span>
+              <span className="muted">
+                Total {sets.workDone + sets.warmupDone}/{sets.workTotal + sets.warmupTotal}
+              </span>
+            </>
           )}
         </div>
         <div className="set-counter-track">
@@ -255,8 +260,6 @@ export function TodayScreen() {
         <button className="btn btn-success" onClick={() => setConfirmFinish(true)}>
           Finish Workout
         </button>
-        <div className="spacer" />
-        <ShareTextButton session={session} label="📝 Share progress as text" />
         <div className="spacer" />
         <button className="btn btn-danger" onClick={() => setConfirmDiscard(true)}>
           Discard
