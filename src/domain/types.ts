@@ -148,6 +148,16 @@ export interface AppState {
   customWorkouts: CustomWorkout[];
 }
 
+/**
+ * Live status of an exercise within a session, for color-coding the cards:
+ *  - `complete`: every work set done at (or above) target reps.
+ *  - `partial`: every work set done, but at least one fell short on reps.
+ *  - `unfinished`: some work sets not done, and a later exercise has already
+ *    been started (the lifter moved on).
+ *  - `pending`: not started yet, or still in progress.
+ */
+export type ExerciseStatus = 'complete' | 'partial' | 'unfinished' | 'pending';
+
 /** Per-exercise success/fail result derived from a completed session. */
 export interface ExerciseResult {
   exerciseId: ExerciseId;

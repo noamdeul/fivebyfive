@@ -6,7 +6,7 @@ import { ShareTextButton } from '../components/ShareTextButton';
 import { GarminExportButton } from '../components/GarminExportButton';
 import { getExercise } from '../domain/exercises';
 import { isExerciseSucceeded } from '../domain/progression';
-import { countSets, sessionTitle } from '../domain/session';
+import { countSets, exerciseStatuses, sessionTitle } from '../domain/session';
 import { upcomingWorkouts } from '../domain/schedule';
 import { formatWeight } from '../domain/units';
 import type { CustomWorkout, ExerciseDef, WorkoutType } from '../domain/types';
@@ -208,6 +208,7 @@ export function TodayScreen() {
   }));
   const okCount = summary.filter((s) => s.ok).length;
   const sets = countSets(session);
+  const statuses = exerciseStatuses(session);
   const setsProgress = sets.workTotal > 0 ? sets.workDone / sets.workTotal : 0;
 
   return (
@@ -243,6 +244,7 @@ export function TodayScreen() {
             exercise={ex}
             exerciseIndex={i}
             settings={settings}
+            status={statuses[i]}
           />
         ))}
 

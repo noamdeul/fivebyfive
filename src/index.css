@@ -10,6 +10,8 @@
   --success: #22c55e;
   --danger: #ef4444;
   --warn: #f59e0b;
+  --partial: #eab308;
+  --unfinished: #f97316;
   --nav-h: 60px;
   --max-w: 520px;
   color-scheme: dark;
@@ -477,6 +479,32 @@ select {
 .badge.pr {
   color: var(--accent);
   border-color: var(--accent);
+}
+/* Exercise card status color-coding (in-session). */
+.exercise-card {
+  border-left-width: 4px;
+  transition: border-color 0.2s ease;
+}
+.exercise-card.status-complete {
+  border-color: var(--success);
+}
+.exercise-card.status-partial {
+  border-color: var(--partial);
+}
+.exercise-card.status-unfinished {
+  border-color: var(--unfinished);
+}
+.status-badge.complete {
+  color: var(--success);
+  border-color: var(--success);
+}
+.status-badge.partial {
+  color: var(--partial);
+  border-color: var(--partial);
+}
+.status-badge.unfinished {
+  color: var(--unfinished);
+  border-color: var(--unfinished);
 }
 .badge-row {
   display: inline-flex;

@@ -6,6 +6,7 @@ import type {
   ExerciseId,
   ExerciseResult,
   ExerciseState,
+  ExerciseStatus,
   LoggedExercise,
   LoggedSet,
   Settings,
@@ -156,4 +157,22 @@ export function countSets(session: Pick<WorkoutSession, 'exercises'>): SetCounts
     counts.warmupDone += warmups.filter((s) => s.done).length;
   }
   return counts;
+}
+
+function hasAnyDone(ex: LoggedExercise): boolean {
+  return ex.workSets.some((s) => s.done) || (ex.warmupSets ?? []).some((s) => s.done);
+}
+
+/** Status of each exercise in a session, in order. See `ExerciseStatus`. An
+ *  exercise counts as "moved on from" once any later exercise has a set done. */
+export function exerciseStatuses(session: Pick<WorkoutSession, 'exercises'>): ExerciseStatus[] {
+  const { exercises } = session;
+  return exercises.map((ex, i) => {
+    const allDone = ex.workSets.length > 0 && ex.workSets.every((s) => s.done);
+    if (allDone) {
+      return ex.workSets.every((s) => s.reps >= s.targetReps) ? 'complete' : 'partial';
+    }
+    const movedOn = exercises.slice(i + 1).some(hasAnyDone);
+    return movedOn ? 'unfinished' : 'pending';
+  });
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getExercise } from '../domain/exercises';
-import type { LoggedExercise, Settings } from '../domain/types';
+import type { ExerciseStatus, LoggedExercise, Settings } from '../domain/types';
 import { computePlatesPerSide, formatPlateLoad, formatWeight } from '../domain/units';
 import { useAppStore } from '../store/useAppStore';
 import { SetTracker } from './SetTracker';
@@ -10,9 +10,17 @@ interface Props {
   exercise: LoggedExercise;
   exerciseIndex: number;
   settings: Settings;
+  status: ExerciseStatus;
 }
 
-export function ExerciseCard({ exercise, exerciseIndex, settings }: Props) {
+const STATUS_LABEL: Record<ExerciseStatus, string | null> = {
+  complete: '✓ Done',
+  partial: 'Done · missed reps',
+  unfinished: 'Unfinished',
+  pending: null,
+};
+
+export function ExerciseCard({ exercise, exerciseIndex, settings, status }: Props) {
   const toggleSet = useAppStore((s) => s.toggleSet);
   const setReps = useAppStore((s) => s.setReps);
   const startRest = useAppStore((s) => s.startRest);
@@ -47,11 +55,16 @@ export function ExerciseCard({ exercise, exerciseIndex, settings }: Props) {
   };
 
   return (
-    <div className="card">
+    <div className={`card exercise-card status-${status}`}>
       <div className="card-head">
         <h3>{def.name}</h3>
-        <span className="target">
-          {def.sets} × {def.reps}
+        <span className="badge-row">
+          {STATUS_LABEL[status] && (
+            <span className={`badge status-badge ${status}`}>{STATUS_LABEL[status]}</span>
+          )}
+          <span className="target">
+            {def.sets} × {def.reps}
+          </span>
         </span>
       </div>
       <div className="weight-row">
