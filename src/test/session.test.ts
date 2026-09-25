@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { defaultExerciseStates, defaultSettings } from '../domain/defaults';
 import {
   buildSessionFromTemplate,
+  countSets,
+  exerciseStatuses,
   flipWorkoutType,
   sessionResults,
 } from '../domain/session';
@@ -74,5 +76,71 @@ describe('sessionResults', () => {
     const results = sessionResults(session);
     expect(results.find((r) => r.exerciseId === 'squat')!.succeeded).toBe(true);
     expect(results.find((r) => r.exerciseId === 'bench')!.succeeded).toBe(false);
+  });
+});
+
+describe('countSets', () => {
+  it('counts done and total work and warmup sets across exercises', () => {
+    const session = buildSessionFromTemplate(
+      'A',
+      defaultExerciseStates('kg'),
+      defaultSettings('kg'),
+      'id-3',
+      '2026-01-01T00:00:00Z',
+    );
+    const before = countSets(session);
+    expect(before.workTotal).toBe(15);
+    expect(before.workDone).toBe(0);
+    expect(before.warmupDone).toBe(0);
+
+    session.exercises[0].workSets[0].done = true;
+    session.exercises[1].workSets[2].done = true;
+    if (session.exercises[0].warmupSets.length > 0) session.exercises[0].warmupSets[0].done = true;
+    const after = countSets(session);
+    expect(after.workDone).toBe(2);
+    expect(after.warmupTotal).toBe(before.warmupTotal);
+    expect(after.warmupDone).toBe(session.exercises[0].warmupSets.length > 0 ? 1 : 0);
+  });
+});
+
+describe('exerciseStatuses', () => {
+  const fresh = () =>
+    buildSessionFromTemplate(
+      'A',
+      defaultExerciseStates('kg'),
+      defaultSettings('kg'),
+      'id-4',
+      '2026-01-01T00:00:00Z',
+    );
+  const finishAll = (sets: { done: boolean; reps: number; targetReps: number }[]) =>
+    sets.forEach((s) => {
+      s.done = true;
+      s.reps = s.targetReps;
+    });
+
+  it('starts with every exercise pending', () => {
+    expect(exerciseStatuses(fresh())).toEqual(['pending', 'pending', 'pending']);
+  });
+
+  it('marks all sets at target reps as complete', () => {
+    const s = fresh();
+    finishAll(s.exercises[0].workSets);
+    expect(exerciseStatuses(s)[0]).toBe('complete');
+  });
+
+  it('marks all sets done but some short on reps as partial', () => {
+    const s = fresh();
+    finishAll(s.exercises[0].workSets);
+    s.exercises[0].workSets[4].reps = 3;
+    expect(exerciseStatuses(s)[0]).toBe('partial');
+  });
+
+  it('keeps a half-done exercise pending until a later one is started', () => {
+    const s = fresh();
+    s.exercises[0].workSets[0].done = true;
+    expect(exerciseStatuses(s)[0]).toBe('pending');
+
+    s.exercises[2].workSets[0].done = true;
+    expect(exerciseStatuses(s)).toEqual(['unfinished', 'unfinished', 'pending']);
   });
 });

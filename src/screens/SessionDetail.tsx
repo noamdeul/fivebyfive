@@ -1,4 +1,5 @@
 import { ShareButton } from '../components/ShareButton';
+import { ShareTextButton } from '../components/ShareTextButton';
 import { getExercise } from '../domain/exercises';
 import { isExerciseSucceeded } from '../domain/progression';
 import { sessionTitle } from '../domain/session';
@@ -107,6 +108,8 @@ export function SessionDetail({ session, onBack }: Props) {
         })}
 
         <ShareButton session={session} label="📤 Share this workout" />
+        <div className="spacer" />
+        <ShareTextButton session={session} />
       </div>
     </>
   );

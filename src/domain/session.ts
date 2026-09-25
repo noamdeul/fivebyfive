@@ -6,6 +6,7 @@ import type {
   ExerciseId,
   ExerciseResult,
   ExerciseState,
+  ExerciseStatus,
   LoggedExercise,
   LoggedSet,
   Settings,
@@ -134,4 +135,44 @@ export function sessionSlug(session: Pick<WorkoutSession, 'name' | 'type'>): str
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
   return slug || 'custom';
+}
+
+/** Done/total counts for a session's sets, split into work and warmup. */
+export interface SetCounts {
+  workDone: number;
+  workTotal: number;
+  warmupDone: number;
+  warmupTotal: number;
+}
+
+/** Count done vs. total sets across every exercise in a session. Drives the
+ *  in-session "sets completed" counter. */
+export function countSets(session: Pick<WorkoutSession, 'exercises'>): SetCounts {
+  const counts: SetCounts = { workDone: 0, workTotal: 0, warmupDone: 0, warmupTotal: 0 };
+  for (const ex of session.exercises) {
+    counts.workTotal += ex.workSets.length;
+    counts.workDone += ex.workSets.filter((s) => s.done).length;
+    const warmups = ex.warmupSets ?? [];
+    counts.warmupTotal += warmups.length;
+    counts.warmupDone += warmups.filter((s) => s.done).length;
+  }
+  return counts;
+}
+
+function hasAnyDone(ex: LoggedExercise): boolean {
+  return ex.workSets.some((s) => s.done) || (ex.warmupSets ?? []).some((s) => s.done);
+}
+
+/** Status of each exercise in a session, in order. See `ExerciseStatus`. An
+ *  exercise counts as "moved on from" once any later exercise has a set done. */
+export function exerciseStatuses(session: Pick<WorkoutSession, 'exercises'>): ExerciseStatus[] {
+  const { exercises } = session;
+  return exercises.map((ex, i) => {
+    const allDone = ex.workSets.length > 0 && ex.workSets.every((s) => s.done);
+    if (allDone) {
+      return ex.workSets.every((s) => s.reps >= s.targetReps) ? 'complete' : 'partial';
+    }
+    const movedOn = exercises.slice(i + 1).some(hasAnyDone);
+    return movedOn ? 'unfinished' : 'pending';
+  });
 }
