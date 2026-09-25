@@ -135,3 +135,25 @@ export function sessionSlug(session: Pick<WorkoutSession, 'name' | 'type'>): str
     .replace(/(^-|-$)/g, '');
   return slug || 'custom';
 }
+
+/** Done/total counts for a session's sets, split into work and warmup. */
+export interface SetCounts {
+  workDone: number;
+  workTotal: number;
+  warmupDone: number;
+  warmupTotal: number;
+}
+
+/** Count done vs. total sets across every exercise in a session. Drives the
+ *  in-session "sets completed" counter. */
+export function countSets(session: Pick<WorkoutSession, 'exercises'>): SetCounts {
+  const counts: SetCounts = { workDone: 0, workTotal: 0, warmupDone: 0, warmupTotal: 0 };
+  for (const ex of session.exercises) {
+    counts.workTotal += ex.workSets.length;
+    counts.workDone += ex.workSets.filter((s) => s.done).length;
+    const warmups = ex.warmupSets ?? [];
+    counts.warmupTotal += warmups.length;
+    counts.warmupDone += warmups.filter((s) => s.done).length;
+  }
+  return counts;
+}

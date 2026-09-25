@@ -514,6 +514,34 @@ select {
 .chart-empty {
   margin-top: 10px;
 }
+/* In-session sets counter: stays pinned at the top while scrolling. */
+.set-counter {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  padding: 8px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.set-counter-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.set-counter-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+.set-counter-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
 .pill {
   display: inline-block;
   font-size: 0.7rem;

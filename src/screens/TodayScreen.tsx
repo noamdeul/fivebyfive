@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { ExerciseCard } from '../components/ExerciseCard';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ShareButton } from '../components/ShareButton';
+import { ShareTextButton } from '../components/ShareTextButton';
 import { GarminExportButton } from '../components/GarminExportButton';
 import { getExercise } from '../domain/exercises';
 import { isExerciseSucceeded } from '../domain/progression';
-import { sessionTitle } from '../domain/session';
+import { countSets, sessionTitle } from '../domain/session';
 import { upcomingWorkouts } from '../domain/schedule';
 import { formatWeight } from '../domain/units';
 import type { CustomWorkout, ExerciseDef, WorkoutType } from '../domain/types';
@@ -108,6 +109,8 @@ export function TodayScreen() {
             label="📤 Share workout image"
           />
           <div className="spacer" />
+          <ShareTextButton session={lastFinished} />
+          <div className="spacer" />
           <GarminExportButton session={lastFinished} />
           <div className="spacer" />
           <button className="btn" onClick={dismissFinished}>
@@ -204,6 +207,8 @@ export function TodayScreen() {
     ok: isExerciseSucceeded(ex),
   }));
   const okCount = summary.filter((s) => s.ok).length;
+  const sets = countSets(session);
+  const setsProgress = sets.workTotal > 0 ? sets.workDone / sets.workTotal : 0;
 
   return (
     <>
@@ -212,6 +217,24 @@ export function TodayScreen() {
           {sessionTitle(session)} <span className="pill">In progress</span>
         </h1>
         <div className="sub">{formatDate(session.date)}</div>
+      </div>
+      <div className="set-counter" aria-label="Sets completed">
+        <div className="set-counter-text">
+          <span>
+            <strong>
+              {sets.workDone}/{sets.workTotal}
+            </strong>{' '}
+            sets
+          </span>
+          {sets.warmupTotal > 0 && (
+            <span className="muted">
+              Warmups {sets.warmupDone}/{sets.warmupTotal}
+            </span>
+          )}
+        </div>
+        <div className="set-counter-track">
+          <div className="set-counter-fill" style={{ width: `${setsProgress * 100}%` }} />
+        </div>
       </div>
       <div className="screen">
         {session.exercises.map((ex, i) => (
@@ -230,6 +253,8 @@ export function TodayScreen() {
         <button className="btn btn-success" onClick={() => setConfirmFinish(true)}>
           Finish Workout
         </button>
+        <div className="spacer" />
+        <ShareTextButton session={session} label="📝 Share progress as text" />
         <div className="spacer" />
         <button className="btn btn-danger" onClick={() => setConfirmDiscard(true)}>
           Discard
