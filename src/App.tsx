@@ -18,9 +18,12 @@ export default function App() {
   const keepScreenAwake = useAppStore((s) => s.settings.keepScreenAwake);
   const workoutActive = useAppStore((s) => s.currentSession != null);
   useWakeLock(keepScreenAwake && workoutActive);
+  // The rest bar floats above the bottom nav; pad the page so it never covers
+  // the last buttons on screen.
+  const resting = useAppStore((s) => s.rest.endsAt != null);
 
   return (
-    <div className="app">
+    <div className={`app${resting ? ' resting' : ''}`}>
       {tab === 'today' && <TodayScreen />}
       {tab === 'history' && <HistoryScreen />}
       {tab === 'progress' && <ProgressScreen />}
