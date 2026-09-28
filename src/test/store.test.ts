@@ -8,7 +8,7 @@ import type { AppState } from '../domain/types';
 function reset(unit: 'kg' | 'lb' = 'kg') {
   useAppStore.setState({
     ...defaultAppState(unit),
-    rest: { endsAt: null, durationSec: 0 },
+    rest: { endsAt: null, durationSec: 0, setStartedAt: null },
     lastFinished: null,
     lastBackupAt: null,
     persistError: false,
@@ -329,6 +329,19 @@ describe('rest timer actions', () => {
     expect(rest.endsAt).not.toBeNull();
     useAppStore.getState().stopRest();
     expect(useAppStore.getState().rest.endsAt).toBeNull();
+  });
+
+  it('startSet ends the rest and times the set; the next rest clears it', () => {
+    useAppStore.getState().startRest(90);
+    useAppStore.getState().startSet();
+    let { rest } = useAppStore.getState();
+    expect(rest.endsAt).toBeNull();
+    expect(rest.setStartedAt).not.toBeNull();
+
+    useAppStore.getState().startRest(90);
+    rest = useAppStore.getState().rest;
+    expect(rest.setStartedAt).toBeNull();
+    expect(rest.endsAt).not.toBeNull();
   });
 });
 

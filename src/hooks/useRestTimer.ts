@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 
+/**
+ * - idle:     nothing to show
+ * - resting:  counting down to the end of the rest
+ * - overtime: rest is over but the next set hasn't started; counts up
+ * - lifting:  "Start set" was tapped; counts up until the set is marked done
+ */
+export type RestPhase = 'idle' | 'resting' | 'overtime' | 'lifting';
+
 export interface RestTimerView {
-  active: boolean;
-  remainingSec: number;
+  phase: RestPhase;
+  /** Seconds left while resting; seconds elapsed in overtime / lifting. */
+  seconds: number;
   durationSec: number;
   /** 0..1 fraction elapsed, for a progress ring. */
   progress: number;
@@ -37,17 +46,19 @@ function playBeep() {
 
 export function useRestTimer(): RestTimerView {
   const rest = useAppStore((s) => s.rest);
-  const stopRest = useAppStore((s) => s.stopRest);
   const sound = useAppStore((s) => s.settings.sound);
   const [now, setNow] = useState(() => Date.now());
 
+  const ticking = rest.endsAt != null || rest.setStartedAt != null;
   useEffect(() => {
-    if (rest.endsAt == null) return;
+    if (!ticking) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
-  }, [rest.endsAt]);
+  }, [ticking]);
 
-  // Fire vibration/notification once the timer crosses zero, then clear it.
+  // Fire vibration/sound once the rest crosses zero. The bar stays up in
+  // overtime so "Start set" is still there when the lifter is ready.
   useEffect(() => {
     if (rest.endsAt == null) return;
     const msLeft = rest.endsAt - Date.now();
@@ -57,19 +68,25 @@ export function useRestTimer(): RestTimerView {
         navigator.vibrate?.([200, 100, 200]);
       }
       if (sound) playBeep();
-      stopRest();
     }, msLeft);
     return () => clearTimeout(id);
-  }, [rest.endsAt, stopRest, sound]);
+  }, [rest.endsAt, sound]);
 
-  if (rest.endsAt == null) {
-    return { active: false, remainingSec: 0, durationSec: rest.durationSec, progress: 0 };
+  if (rest.setStartedAt != null) {
+    const seconds = Math.max(0, Math.floor((now - rest.setStartedAt) / 1000));
+    return { phase: 'lifting', seconds, durationSec: rest.durationSec, progress: 0 };
   }
 
-  const remainingMs = Math.max(0, rest.endsAt - now);
-  const remainingSec = Math.ceil(remainingMs / 1000);
+  if (rest.endsAt == null) {
+    return { phase: 'idle', seconds: 0, durationSec: rest.durationSec, progress: 0 };
+  }
+
+  const remainingMs = rest.endsAt - now;
+  if (remainingMs <= 0) {
+    return { phase: 'overtime', seconds: Math.floor(-remainingMs / 1000), durationSec: rest.durationSec, progress: 1 };
+  }
+
   const durationSec = rest.durationSec || 1;
   const progress = Math.min(1, Math.max(0, 1 - remainingMs / (durationSec * 1000)));
-
-  return { active: remainingMs > 0, remainingSec, durationSec, progress };
+  return { phase: 'resting', seconds: Math.ceil(remainingMs / 1000), durationSec, progress };
 }

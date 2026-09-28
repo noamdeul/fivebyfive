@@ -443,6 +443,23 @@ select {
   color: #fff;
   font-weight: 600;
 }
+.rest-bar .start-set {
+  background: #fff;
+  color: var(--accent-dim);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 18px;
+}
+.rest-bar.overtime {
+  background: var(--success);
+}
+.rest-bar.overtime .start-set {
+  color: #14532d;
+}
+.rest-bar.lifting {
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+}
 .rest-progress {
   position: absolute;
   top: 0;
