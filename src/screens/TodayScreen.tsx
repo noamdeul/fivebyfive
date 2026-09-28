@@ -218,28 +218,28 @@ export function TodayScreen() {
           {sessionTitle(session)} <span className="pill">In progress</span>
         </h1>
         <div className="sub">{formatDate(session.date)}</div>
-      </div>
-      <div className="set-counter" aria-label="Sets completed">
-        <div className="set-counter-text">
-          <span>
-            <strong>
-              {sets.workDone}/{sets.workTotal}
-            </strong>{' '}
-            sets
-          </span>
-          {sets.warmupTotal > 0 && (
-            <>
-              <span className="muted">
-                Warmups {sets.warmupDone}/{sets.warmupTotal}
-              </span>
-              <span className="muted">
-                Total {sets.workDone + sets.warmupDone}/{sets.workTotal + sets.warmupTotal}
-              </span>
-            </>
-          )}
-        </div>
-        <div className="set-counter-track">
-          <div className="set-counter-fill" style={{ width: `${setsProgress * 100}%` }} />
+        <div className="set-counter" aria-label="Sets completed">
+          <div className="set-counter-text">
+            <span>
+              <strong>
+                {sets.workDone}/{sets.workTotal}
+              </strong>{' '}
+              sets
+            </span>
+            {sets.warmupTotal > 0 && (
+              <>
+                <span className="muted">
+                  Warmups {sets.warmupDone}/{sets.warmupTotal}
+                </span>
+                <span className="muted">
+                  Total {sets.workDone + sets.warmupDone}/{sets.workTotal + sets.warmupTotal}
+                </span>
+              </>
+            )}
+          </div>
+          <div className="set-counter-track">
+            <div className="set-counter-fill" style={{ width: `${setsProgress * 100}%` }} />
+          </div>
         </div>
       </div>
       <div className="screen">
