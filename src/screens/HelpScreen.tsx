@@ -113,7 +113,10 @@ export function HelpScreen({ onBack }: Props) {
         <div className="card">
           <p className="muted" style={{ marginTop: 0, marginBottom: 0 }}>
             A countdown starts after each work set so you rest long enough to lift
-            heavy. In Settings you can set the rest length for work sets and
+            heavy. When you walk up to the bar, tap <strong>Start set</strong>: the
+            rest stops and a set timer runs until you tap the set as done, which
+            starts the next rest. That way the time spent lifting never eats into
+            your rest. In Settings you can set the rest length for work sets and
             deadlifts separately, turn the finish sound on or off, and keep the
             screen awake during a workout.
           </p>

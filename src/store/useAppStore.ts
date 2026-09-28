@@ -31,7 +31,11 @@ interface RestTimer {
   endsAt: number | null;
   /** Total duration of the active rest, for the progress ring. */
   durationSec: number;
+  /** Epoch ms when the lifter tapped "Start set", or null when not lifting. */
+  setStartedAt: number | null;
 }
+
+const IDLE_REST: RestTimer = { endsAt: null, durationSec: 0, setStartedAt: null };
 
 interface Store extends AppState {
   // Transient UI state (not persisted).
@@ -68,6 +72,8 @@ interface Store extends AppState {
   // Rest timer.
   startRest: (seconds: number) => void;
   stopRest: () => void;
+  /** End the rest (early or not) and time the set until it's marked done. */
+  startSet: () => void;
 
   // Settings & data.
   updateSettings: (partial: Partial<Settings>) => void;
@@ -243,7 +249,7 @@ export const useAppStore = create<Store>()(
   persist(
     (set, get) => ({
       ...defaultAppState('kg'),
-      rest: { endsAt: null, durationSec: 0 },
+      rest: IDLE_REST,
       lastFinished: null,
       lastBackupAt: null,
       persistError: false,
@@ -284,7 +290,7 @@ export const useAppStore = create<Store>()(
       },
 
       discardWorkout: () =>
-        set({ currentSession: null, lastFinished: null, rest: { endsAt: null, durationSec: 0 } }),
+        set({ currentSession: null, lastFinished: null, rest: IDLE_REST }),
 
       finishWorkout: () => {
         const { currentSession, exerciseStates, settings, history, customExercises, nextWorkoutType } =
@@ -333,7 +339,7 @@ export const useAppStore = create<Store>()(
               : flipWorkoutType(currentSession.type ?? nextWorkoutType),
           currentSession: null,
           lastFinished: completed,
-          rest: { endsAt: null, durationSec: 0 },
+          rest: IDLE_REST,
         });
       },
 
@@ -442,9 +448,11 @@ export const useAppStore = create<Store>()(
       },
 
       startRest: (seconds) =>
-        set({ rest: { endsAt: Date.now() + seconds * 1000, durationSec: seconds } }),
+        set({ rest: { endsAt: Date.now() + seconds * 1000, durationSec: seconds, setStartedAt: null } }),
 
-      stopRest: () => set({ rest: { endsAt: null, durationSec: 0 } }),
+      startSet: () => set({ rest: { ...IDLE_REST, setStartedAt: Date.now() } }),
+
+      stopRest: () => set({ rest: IDLE_REST }),
 
       updateSettings: (partial) => set((s) => ({ settings: { ...s.settings, ...partial } })),
 
@@ -580,7 +588,7 @@ export const useAppStore = create<Store>()(
           customExercises: state.customExercises ?? [],
           customWorkouts: state.customWorkouts ?? [],
           lastFinished: null,
-          rest: { endsAt: null, durationSec: 0 },
+          rest: IDLE_REST,
           // After an import the current data matches an external file the user
           // just handled, so treat it as backed up.
           lastBackupAt: new Date().toISOString(),
@@ -590,7 +598,7 @@ export const useAppStore = create<Store>()(
         set({
           ...defaultAppState(get().settings.unit),
           lastFinished: null,
-          rest: { endsAt: null, durationSec: 0 },
+          rest: IDLE_REST,
         }),
 
       exportData: () => pickAppState(get()),

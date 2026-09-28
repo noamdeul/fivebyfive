@@ -20,7 +20,7 @@ export default function App() {
   useWakeLock(keepScreenAwake && workoutActive);
   // The rest bar floats above the bottom nav; pad the page so it never covers
   // the last buttons on screen.
-  const resting = useAppStore((s) => s.rest.endsAt != null);
+  const resting = useAppStore((s) => s.rest.endsAt != null || s.rest.setStartedAt != null);
 
   return (
     <div className={`app${resting ? ' resting' : ''}`}>

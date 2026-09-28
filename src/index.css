@@ -75,7 +75,14 @@ select {
 }
 
 .screen-header {
-  padding: 18px 16px 8px;
+  /* Pinned to the top while the screen scrolls. The negative margin pulls it
+     up into .app's safe-area padding so content can't peek through the notch. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  margin-top: calc(-1 * env(safe-area-inset-top));
+  padding: calc(18px + env(safe-area-inset-top)) 16px 8px;
 }
 .screen-header h1 {
   margin: 0;
@@ -436,6 +443,23 @@ select {
   color: #fff;
   font-weight: 600;
 }
+.rest-bar .start-set {
+  background: #fff;
+  color: var(--accent-dim);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 18px;
+}
+.rest-bar.overtime {
+  background: var(--success);
+}
+.rest-bar.overtime .start-set {
+  color: #14532d;
+}
+.rest-bar.lifting {
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+}
 .rest-progress {
   position: absolute;
   top: 0;
@@ -546,12 +570,9 @@ select {
 .chart-empty {
   margin-top: 10px;
 }
-/* In-session sets counter: stays pinned at the top while scrolling. */
+/* In-session sets counter: lives inside the sticky .screen-header. */
 .set-counter {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--bg);
+  margin: 10px -16px -8px;
   padding: 8px 16px 10px;
   border-bottom: 1px solid var(--border);
 }
