@@ -3,6 +3,7 @@ import { BackupReminder } from './components/BackupReminder';
 import { BottomNav } from './components/BottomNav';
 import { RestTimerBar } from './components/RestTimerBar';
 import { StorageWarning } from './components/StorageWarning';
+import { isSessionUntouched } from './domain/session';
 import { usePwaUpdate } from './hooks/usePwaUpdate';
 import { useWakeLock } from './hooks/useWakeLock';
 import { HistoryScreen } from './screens/HistoryScreen';
@@ -20,7 +21,12 @@ export default function App() {
   useWakeLock(keepScreenAwake && workoutActive);
   // The rest bar floats above the bottom nav; pad the page so it never covers
   // the last buttons on screen.
-  const resting = useAppStore((s) => s.rest.endsAt != null || s.rest.setStartedAt != null);
+  const resting = useAppStore(
+    (s) =>
+      s.rest.endsAt != null ||
+      s.rest.setStartedAt != null ||
+      (s.currentSession != null && isSessionUntouched(s.currentSession)),
+  );
 
   return (
     <div className={`app${resting ? ' resting' : ''}`}>

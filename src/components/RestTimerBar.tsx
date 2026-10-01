@@ -1,3 +1,4 @@
+import { isSessionUntouched } from '../domain/session';
 import { useAppStore } from '../store/useAppStore';
 import { useRestTimer } from '../hooks/useRestTimer';
 
@@ -12,8 +13,22 @@ export function RestTimerBar() {
   const startRest = useAppStore((s) => s.startRest);
   const stopRest = useAppStore((s) => s.stopRest);
   const startSet = useAppStore((s) => s.startSet);
+  const readyToStart = useAppStore(
+    (s) => s.currentSession != null && isSessionUntouched(s.currentSession),
+  );
 
-  if (phase === 'idle') return null;
+  if (phase === 'idle') {
+    // Nothing logged yet: offer a way to start timing the first warmup.
+    if (!readyToStart) return null;
+    return (
+      <div className="rest-bar">
+        <div className="label">Ready for your first warmup?</div>
+        <button className="start-set" onClick={startSet}>
+          Start workout
+        </button>
+      </div>
+    );
+  }
 
   if (phase === 'lifting') {
     return (

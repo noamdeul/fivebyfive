@@ -54,6 +54,12 @@ export function ExerciseCard({ exercise, exerciseIndex, settings, status }: Prop
     }
   };
 
+  const toggleWarmupSet = (i: number) => {
+    // Completing a warmup starts the (shorter) warmup rest timer.
+    if (!exercise.warmupSets[i].done) startRest(settings.restSeconds.normal);
+    toggleSet(exerciseIndex, i, true);
+  };
+
   return (
     <div className={`card exercise-card status-${status}`}>
       <div className="card-head">
@@ -115,7 +121,7 @@ export function ExerciseCard({ exercise, exerciseIndex, settings, status }: Prop
         sets={exercise.warmupSets}
         unit={settings.unit}
         rounding={settings.rounding}
-        onToggle={(i) => toggleSet(exerciseIndex, i, true)}
+        onToggle={toggleWarmupSet}
         onWeightChange={(i, w) => setWarmupWeight(exerciseIndex, i, w)}
         onRepsChange={(i, r) => setWarmupReps(exerciseIndex, i, r)}
         onAdd={() => addWarmupSet(exerciseIndex)}

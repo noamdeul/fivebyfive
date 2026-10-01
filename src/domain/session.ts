@@ -163,6 +163,11 @@ function hasAnyDone(ex: LoggedExercise): boolean {
   return ex.workSets.some((s) => s.done) || (ex.warmupSets ?? []).some((s) => s.done);
 }
 
+/** True while no set (warmup or work) has been logged yet in the session. */
+export function isSessionUntouched(session: Pick<WorkoutSession, 'exercises'>): boolean {
+  return !session.exercises.some(hasAnyDone);
+}
+
 /** Status of each exercise in a session, in order. See `ExerciseStatus`. An
  *  exercise counts as "moved on from" once any later exercise has a set done. */
 export function exerciseStatuses(session: Pick<WorkoutSession, 'exercises'>): ExerciseStatus[] {
