@@ -5,6 +5,7 @@ import {
   countSets,
   exerciseStatuses,
   flipWorkoutType,
+  isSessionUntouched,
   sessionResults,
 } from '../domain/session';
 
@@ -142,5 +143,32 @@ describe('exerciseStatuses', () => {
 
     s.exercises[2].workSets[0].done = true;
     expect(exerciseStatuses(s)).toEqual(['unfinished', 'unfinished', 'pending']);
+  });
+});
+
+describe('isSessionUntouched', () => {
+  const build = () =>
+    buildSessionFromTemplate(
+      'A',
+      defaultExerciseStates('kg'),
+      defaultSettings('kg'),
+      'id-4',
+      '2026-01-01T00:00:00Z',
+    );
+
+  it('is true for a fresh session', () => {
+    expect(isSessionUntouched(build())).toBe(true);
+  });
+
+  it('is false once a warmup set is done', () => {
+    const session = build();
+    session.exercises[0].warmupSets[0].done = true;
+    expect(isSessionUntouched(session)).toBe(false);
+  });
+
+  it('is false once a work set is done', () => {
+    const session = build();
+    session.exercises[2].workSets[0].done = true;
+    expect(isSessionUntouched(session)).toBe(false);
   });
 });
