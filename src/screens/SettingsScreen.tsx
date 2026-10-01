@@ -236,6 +236,16 @@ export function SettingsScreen() {
         <div className="section-label">Rest timer (seconds)</div>
         <div className="card">
           <div className="field">
+            <label>Between warmups</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              step={30}
+              value={settings.restSeconds.normal}
+              onChange={(e) => setRest('normal', parseInt(e.target.value, 10))}
+            />
+          </div>
+          <div className="field">
             <label>Between work sets</label>
             <input
               type="number"

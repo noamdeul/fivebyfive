@@ -55,8 +55,8 @@ export function ExerciseCard({ exercise, exerciseIndex, settings, status }: Prop
   };
 
   const toggleWarmupSet = (i: number) => {
-    // Completing a warmup starts the rest timer, same as a work set.
-    if (!exercise.warmupSets[i].done) startRest(restSecondsFor());
+    // Completing a warmup starts the (shorter) warmup rest timer.
+    if (!exercise.warmupSets[i].done) startRest(settings.restSeconds.normal);
     toggleSet(exerciseIndex, i, true);
   };
 
